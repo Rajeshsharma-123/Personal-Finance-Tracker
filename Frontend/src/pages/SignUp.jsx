@@ -1,23 +1,15 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
-function Login() {
-    const [formData, setFormData] = useState({ username: '', password: '' });
-    const [error, setError] = useState('');
+function SignUp() {
+    const [formData, setFormData] = useState({email:'', username: '', password: '' });
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            // Mock API call
-            if (formData.username === 'user' && formData.password === 'pass') {
-                navigate('/transactions');
-            } else {
-                throw new Error('Invalid credentials');
-            }
-        } catch {
-            setError('Invalid credentials. Please try again.');
-        }
+        // Mock API call
+        alert('Account created successfully!');
+        navigate('/');
     };
 
     return (
@@ -27,9 +19,16 @@ function Login() {
                 className="w-full max-w-sm bg-white rounded-lg shadow-md p-6 space-y-4"
             >
                 <h2 className="text-2xl font-semibold text-gray-800 text-center">
-                    Login
+                    Sign Up
                 </h2>
-                {error && <div className="bg-red-100 text-red-600 p-2 rounded">{error}</div>}
+                <input
+                    type="email"
+                    placeholder="Email"
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                />
+
                 <input
                     type="text"
                     placeholder="Username"
@@ -44,13 +43,13 @@ function Login() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
-                <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-lg">
-                    Login
+                <button type="submit" className="w-full bg-green-500 text-white py-2 rounded-lg">
+                    Sign Up
                 </button>
                 <p className="text-center text-gray-600">
-                    Don’t have an account?{' '}
-                    <Link to="/signup" className="text-blue-500 hover:underline">
-                        Sign Up
+                    Already have an account?{' '}
+                    <Link to="/" className="text-blue-500 hover:underline">
+                        Login
                     </Link>
                 </p>
             </form>
@@ -58,4 +57,4 @@ function Login() {
     );
 }
 
-export default Login;
+export default SignUp;
