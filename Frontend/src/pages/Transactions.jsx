@@ -14,6 +14,8 @@ function Transactions() {
         amount: "",
     });
 
+    const [editTransaction, setEditTransaction] = useState(null);
+
     const handleAddTransaction = (e) => {
         e.preventDefault();
         const { date, description, amount } = newTransaction;
@@ -25,10 +27,35 @@ function Transactions() {
 
         setTransactions([
             ...transactions,
-            { id: transactions.length + 1, date, description, amount: parseFloat(amount) },
+            {
+                id: transactions.length + 1,
+                date,
+                description,
+                amount: parseFloat(amount),
+            },
         ]);
 
         setNewTransaction({ date: "", description: "", amount: "" });
+    };
+
+    const handleDeleteTransaction = (id) => {
+        const updatedTransactions = transactions.filter(
+            (transaction) => transaction.id !== id
+        );
+        setTransactions(updatedTransactions);
+    };
+
+    const handleEditTransaction = (transaction) => {
+        setEditTransaction(transaction);
+    };
+
+    const handleUpdateTransaction = (e) => {
+        e.preventDefault();
+        const updatedTransactions = transactions.map((transaction) =>
+            transaction.id === editTransaction.id ? editTransaction : transaction
+        );
+        setTransactions(updatedTransactions);
+        setEditTransaction(null);
     };
 
     return (
@@ -39,20 +66,25 @@ function Transactions() {
 
             {/* Transactions Table */}
             <div className="w-full max-w-4xl bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Transaction History</h2>
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                    Transaction History
+                </h2>
                 <table className="w-full border-collapse">
                     <thead>
                         <tr className="bg-gray-200 text-gray-700">
                             <th className="p-2 border">Date</th>
                             <th className="p-2 border">Description</th>
                             <th className="p-2 border">Amount</th>
+                            <th className="p-2 border">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {transactions.map((transaction) => (
                             <tr key={transaction.id} className="text-center">
                                 <td className="p-2 border">{transaction.date}</td>
-                                <td className="p-2 border">{transaction.description}</td>
+                                <td className="p-2 border">
+                                    {transaction.description}
+                                </td>
                                 <td
                                     className={`p-2 border ${
                                         transaction.amount < 0
@@ -60,7 +92,28 @@ function Transactions() {
                                             : "text-green-500"
                                     }`}
                                 >
-                                    {transaction.amount < 0 ? "-" : "+"}${Math.abs(transaction.amount).toFixed(2)}
+                                    {transaction.amount < 0 ? "-" : "+"}$
+                                    {Math.abs(transaction.amount).toFixed(2)}
+                                </td>
+                                <td className="p-2 border space-x-2">
+                                    <button
+                                        onClick={() =>
+                                            handleEditTransaction(transaction)
+                                        }
+                                        className="bg-yellow-500 text-white px-4 py-1 rounded-lg hover:bg-yellow-600"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            handleDeleteTransaction(
+                                                transaction.id
+                                            )
+                                        }
+                                        className="bg-red-500 text-white px-4 py-1 rounded-lg hover:bg-red-600"
+                                    >
+                                        Delete
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -70,16 +123,39 @@ function Transactions() {
 
             {/* Add Transaction Form */}
             <div className="w-full max-w-4xl bg-white rounded-lg shadow-md p-6 mt-6">
-                <h2 className="text-xl font-semibold text-gray-800 mb-4">Add Transaction</h2>
-                <form onSubmit={handleAddTransaction} className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                    {editTransaction
+                        ? "Update Transaction"
+                        : "Add Transaction"}
+                </h2>
+                <form
+                    onSubmit={
+                        editTransaction
+                            ? handleUpdateTransaction
+                            : handleAddTransaction
+                    }
+                    className="space-y-4"
+                >
                     <div className="flex flex-col space-y-2">
                         <label className="font-semibold">Date</label>
                         <input
                             type="date"
                             className="w-full px-4 py-2 border rounded-lg"
-                            value={newTransaction.date}
+                            value={
+                                editTransaction
+                                    ? editTransaction.date
+                                    : newTransaction.date
+                            }
                             onChange={(e) =>
-                                setNewTransaction({ ...newTransaction, date: e.target.value })
+                                editTransaction
+                                    ? setEditTransaction({
+                                          ...editTransaction,
+                                          date: e.target.value,
+                                      })
+                                    : setNewTransaction({
+                                          ...newTransaction,
+                                          date: e.target.value,
+                                      })
                             }
                         />
                     </div>
@@ -89,9 +165,21 @@ function Transactions() {
                             type="text"
                             className="w-full px-4 py-2 border rounded-lg"
                             placeholder="E.g., Rent, Salary, etc."
-                            value={newTransaction.description}
+                            value={
+                                editTransaction
+                                    ? editTransaction.description
+                                    : newTransaction.description
+                            }
                             onChange={(e) =>
-                                setNewTransaction({ ...newTransaction, description: e.target.value })
+                                editTransaction
+                                    ? setEditTransaction({
+                                          ...editTransaction,
+                                          description: e.target.value,
+                                      })
+                                    : setNewTransaction({
+                                          ...newTransaction,
+                                          description: e.target.value,
+                                      })
                             }
                         />
                     </div>
@@ -101,9 +189,21 @@ function Transactions() {
                             type="number"
                             className="w-full px-4 py-2 border rounded-lg"
                             placeholder="E.g., 100 or -50"
-                            value={newTransaction.amount}
+                            value={
+                                editTransaction
+                                    ? editTransaction.amount
+                                    : newTransaction.amount
+                            }
                             onChange={(e) =>
-                                setNewTransaction({ ...newTransaction, amount: e.target.value })
+                                editTransaction
+                                    ? setEditTransaction({
+                                          ...editTransaction,
+                                          amount: e.target.value,
+                                      })
+                                    : setNewTransaction({
+                                          ...newTransaction,
+                                          amount: e.target.value,
+                                      })
                             }
                         />
                     </div>
@@ -111,7 +211,7 @@ function Transactions() {
                         type="submit"
                         className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
                     >
-                        Add Transaction
+                        {editTransaction ? "Update Transaction" : "Add Transaction"}
                     </button>
                 </form>
             </div>
