@@ -1,51 +1,39 @@
-import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 function Navbar() {
-    const { currentUser, logout } = useAuth();
+    const { user, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
 
     const handleLogout = () => {
         logout();
+        navigate("/login");
     };
 
     return (
-        <nav className="bg-blue-600 text-white py-4">
-            <div className="container mx-auto flex justify-between items-center">
-                <h1 className="text-xl font-bold">
-                    <Link to="/">MyApp</Link>
-                </h1>
-                <ul className="flex space-x-4">
-                    {!currentUser ? (
-                        <>
-                            <li>
-                                <Link to="/login" className="hover:underline">
-                                    Login
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/signup" className="hover:underline">
-                                    Sign Up
-                                </Link>
-                            </li>
-                        </>
-                    ) : (
-                        <>
-                            <li>
-                                <Link to="/transactions" className="hover:underline">
-                                    Transactions
-                                </Link>
-                            </li>
-                            <li>
-                                <button
-                                    onClick={handleLogout}
-                                    className="hover:underline"
-                                >
-                                    Logout
-                                </button>
-                            </li>
-                        </>
-                    )}
-                </ul>
+        <nav className="bg-blue-500 text-white p-4 flex justify-between items-center">
+            <h1 className="text-xl font-bold">
+                <Link to="/">Finance Tracker</Link>
+            </h1>
+            <div className="space-x-4">
+                {user ? (
+                    <>
+                        <span>Welcome, {user.username}!</span>
+                        <button onClick={handleLogout} className="bg-red-500 px-4 py-2 rounded">
+                            Logout
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <Link to="/login" className="px-4 py-2 bg-gray-200 text-blue-500 rounded">
+                            Login
+                        </Link>
+                        <Link to="/signup" className="px-4 py-2 bg-gray-200 text-blue-500 rounded">
+                            Sign Up
+                        </Link>
+                    </>
+                )}
             </div>
         </nav>
     );

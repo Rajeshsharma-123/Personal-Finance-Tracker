@@ -1,24 +1,25 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+
 
 function Login() {
     const [formData, setFormData] = useState({ username: '', password: '' });
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { login } = useContext(AuthContext);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            // Mock API call
-            if (formData.username === 'user' && formData.password === 'pass') {
-                navigate('/transactions');
-            } else {
-                throw new Error('Invalid credentials');
-            }
-        } catch {
-            setError('Invalid credentials. Please try again.');
+        const success = await login(formData.username, formData.password);
+        if (success) {
+            navigate("/transactions");
+        }
+        else {
+            setError("Invalid credentials . Please try again . ");
         }
     };
+            
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">

@@ -1,62 +1,65 @@
 import { useState } from "react";
+import { fetchTransactions, addTransaction, updateTransaction, deleteTransaction } from "../api";
 
 function Transactions() {
     // Example data for transactions
-    const [transactions, setTransactions] = useState([
-        { id: 1, date: "2025-01-01", description: "Groceries", amount: -50.75 },
-        { id: 2, date: "2025-01-05", description: "Salary", amount: 1500 },
-        { id: 3, date: "2025-01-10", description: "Electricity Bill", amount: -120.5 },
-    ]);
+    const [transactions, setTransactions] = useState([]);
+    const [formData, setFormData] = useState({ amount: '', description:'', date: ''});
+    const [editing, setEditing] = useState(null);
+    const [error, setError] = useState('');
 
-    const [newTransaction, setNewTransaction] = useState({
-        date: "",
-        description: "",
-        amount: "",
-    });
-
-    const [editTransaction, setEditTransaction] = useState(null);
-
-    const handleAddTransaction = (e) => {
-        e.preventDefault();
-        const { date, description, amount } = newTransaction;
-
-        if (!date || !description || !amount) {
-            alert("Please fill in all fields.");
-            return;
-        }
-
-        setTransactions([
-            ...transactions,
-            {
-                id: transactions.length + 1,
-                date,
-                description,
-                amount: parseFloat(amount),
-            },
-        ]);
-
-        setNewTransaction({ date: "", description: "", amount: "" });
-    };
-
-    const handleDeleteTransaction = (id) => {
-        const updatedTransactions = transactions.filter(
-            (transaction) => transaction.id !== id
-        );
-        setTransactions(updatedTransactions);
-    };
-
-    const handleEditTransaction = (transaction) => {
-        setEditTransaction(transaction);
-    };
-
-    const handleUpdateTransaction = (e) => {
-        e.preventDefault();
-        const updatedTransactions = transactions.map((transaction) =>
-            transaction.id === editTransaction.id ? editTransaction : transaction
-        );
-        setTransactions(updatedTransactions);
-        setEditTransaction(null);
-    };
+        // Fetch all transactions on component mount
+        useEffect(() => {
+            const getTransactions = async () => {
+                try {
+                    const { data } = await fetchTransactions();
+                    setTransactions(data);
+                } catch (err) {
+                    setError("Failed to fetch transactions. Please try again.");
+                }
+            };
+            getTransactions();
+        }, []);
+    
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+    
+            try {
+                if (editing) {
+                    // Update transaction
+                    const { data } = await updateTransaction(editing.id, formData);
+                    setTransactions((prev) =>
+                        prev.map((txn) => (txn.id === editing.id ? data : txn))
+                    );
+                    setEditing(null);
+                } else {
+                    // Add transaction
+                    const { data } = await addTransaction(formData);
+                    setTransactions((prev) => [...prev, data]);
+                }
+                setFormData({ amount: '', description: '', date: '' });
+            } catch (err) {
+                setError("Failed to save transaction. Please try again.");
+            }
+        };
+    
+        const handleEdit = (transaction) => {
+            setEditing(transaction);
+            setFormData({
+                amount: transaction.amount,
+                description: transaction.description,
+                date: transaction.date.split("T")[0], // Format date for input
+            });
+        };
+    
+        const handleDelete = async (id) => {
+            try {
+                await deleteTransaction(id);
+                setTransactions((prev) => prev.filter((txn) => txn.id !== id));
+            } catch (err) {
+                setError("Failed to delete transaction. Please try again.");
+            }
+        };
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col items-center">

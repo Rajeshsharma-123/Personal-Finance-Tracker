@@ -1,16 +1,28 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
 function SignUp() {
     const [formData, setFormData] = useState({email:'', username: '', password: '' });
+    const [error, setError] = useState('');
     const navigate = useNavigate();
+    const {register} = useContext(AuthContext);
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         // Mock API call
-        alert('Account created successfully!');
-        navigate('/');
+        const success = await register(formData.email, formData.username, formData.password);
+        if (success){
+            alert('Account created successfully!');
+            navigate("/login");
+        } else {
+            setError("Registration failed. Please try again.") ;
+        }
     };
+
+       
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -43,7 +55,7 @@ function SignUp() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
-                <button type="submit" className="w-full bg-green-500 text-white py-2 rounded-lg">
+                <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-lg">
                     Sign Up
                 </button>
                 <p className="text-center text-gray-600">
