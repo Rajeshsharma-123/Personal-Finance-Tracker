@@ -11,6 +11,7 @@ function Login() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // console.log("Login button clicked"); 
         const success = await login(formData.username, formData.password);
         if (success) {
             navigate("/transactions");
@@ -45,7 +46,7 @@ function Login() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
-                <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-lg">
+                <button onClick={handleSubmit} className="w-full bg-blue-500 text-white py-2 rounded-lg">
                     Login
                 </button>
                 <p className="text-center text-gray-600">
