@@ -1,56 +1,77 @@
 import axios from "axios";
-import { data } from "react-router-dom";
 
 const API = axios.create({
-    baseURL: 'http://127.0.0.1:5000' });
+    baseURL: 'http://127.0.0.1:5000',
     maxRedirects: 0, // Disable redirects
+});
 
 // Add token to headers if it exists in localstorage
 API.interceptors.request.use((req) => {
     const token = localStorage.getItem('token');
-    if(token) {
+    if (token) {
         req.headers.Authorization = `Bearer ${token}`;
     }
-    req.headers["Content-Type"] = "application/json"; // Explicitly set JSON header 
+    req.headers["Content-Type"] = "application/json"; // Explicitly set JSON header
     return req;
 });
 
+export const registerUser = (data) => API.post('/auth/register', data);
 
-export const registerUser =(data) => API.post('/auth/register', data);
-export const loginUser = async (data) =>{
+export const loginUser = async (data) => {
     try {
         const response = await API.post('/auth/login', data);
-        return response.data; // Explicitly return the data object
+        console.log("Login response:", response.data);
+        const token = response.data.access_token; // Extract the token from the response
+
+        if (token) {
+            
+            console.log("Token value before setting in localStorage:", token);
+            localStorage.setItem('token', token);
+            console.log("Token in localStorage after setting:", localStorage.getItem('token'));
+
+        }
+        else{
+            console.error("Token is missing in the response.");
+        }
+        return response.data;
+        
     } catch (error) {
         console.error("Error during login:", error.response?.data || error.message);
-        // You can throw an error or return a default response structure
         throw error.response?.data || { message: "Login failed" };
     }
 };
+
 export const fetchTransactions = async () => {
     try {
-        return await API.get("/transactions");
+        const response = await API.get("/transactions/"); // Ensure consistent trailing slash
+        return response.data; // Explicitly return data
     } catch (error) {
         throw error.response?.data || "Failed to fetch transactions";
     }
 };
+
 export const addTransaction = async (data) => {
     try {
-        return await API.post("/transactions", data);
+        const response = await API.post("/transactions/", data); // Ensure consistent trailing slash
+        return response.data; // Explicitly return data
     } catch (error) {
         throw error.response?.data || "Failed to add transaction";
     }
 };
+
 export const updateTransaction = async (id, data) => {
     try {
-        return await API.put(`/transactions/${id}`, data);
+        const response = await API.put(`/transactions/${id}/`, data); // Ensure consistent trailing slash
+        return response.data; // Explicitly return data
     } catch (error) {
         throw error.response?.data || "Failed to update transaction";
     }
 };
+
 export const deleteTransaction = async (id) => {
     try {
-        return await API.delete(`/transactions/${id}`);
+        const response = await API.delete(`/transactions/${id}/`); // Ensure consistent trailing slash
+        return response.data; // Explicitly return data
     } catch (error) {
         throw error.response?.data || "Failed to delete transaction";
     }

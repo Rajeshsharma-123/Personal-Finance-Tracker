@@ -34,18 +34,25 @@ function Transactions() {
         setLoading(true);
 
         try {
+            // Convert date to ISO format
+            const formattedData = {
+                ...formData,
+                date: new Date(formData.date).toISOString().split("T")[0], // ISO format (YYYY-MM-DD)
+            };
+
             if (editing) {
                 // Update transaction
-                const { data } = await updateTransaction(editing.id, formData);
+                const { data } = await updateTransaction(editing.id, formattedData);
                 setTransactions((prev) =>
                     prev.map((txn) => (txn.id === editing.id ? data : txn))
                 );
                 setEditing(null);
             } else {
                 // Add transaction
-                const { data } = await addTransaction(formData);
+                const { data } = await addTransaction(formattedData);
                 setTransactions((prev) => [...prev, data]);
             }
+
             setFormData({ amount: "", description: "", date: "" });
             setError("");
         } catch (err) {

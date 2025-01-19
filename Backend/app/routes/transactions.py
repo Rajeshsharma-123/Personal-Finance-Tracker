@@ -11,25 +11,42 @@ def add_transaction():
     data = request.get_json()
     amount = data.get('amount')
     description = data.get('description')
-    date = data.get('date', datetime.utcnow().isoformat())
-   
+    date = data.get('date', datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S'))
 
-    if not amount or not description:
-        return jsonify({"message": "Amount and description, and are required!"}), 400
+    # Validate required fields
+    if amount is None or not description:
+        return jsonify({"message": "Amount and description are required!"}), 400
+
+    # Validate date format
+    try:
+        date = datetime.fromisoformat(date).isoformat()
+    except ValueError:
+        return jsonify({"message": "Invalid date format!"}), 400
 
     user_id = get_jwt_identity()
     transaction = Transaction(
-        amount=amount, 
-        description=description, 
+        amount=amount,
+        description=description,
         date=date,
         user_id=user_id
-        )
-        
+    )
 
-    db.session.add(transaction)
-    db.session.commit()
+    try:
+        db.session.add(transaction)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Database error!", "error": str(e)}), 500
 
-    return jsonify({"message": "Transaction added successfully!"}), 201
+    return jsonify({
+        "message": "Transaction added successfully!",
+        "transaction": {
+            "id": transaction.id,
+            "amount": transaction.amount,
+            "description": transaction.description,
+            "date": transaction.date
+        }
+    }), 201
 
 @transaction_bp.route('/', methods=['GET'])
 @jwt_required()
@@ -57,9 +74,20 @@ def update_transaction(transaction_id):
 
     transaction.amount = data.get('amount', transaction.amount)
     transaction.description = data.get('description', transaction.description)
-    transaction.date = data.get('date', transaction.date)
 
-    db.session.commit()
+    # Validate and update date
+    if 'date' in data:
+        try:
+            transaction.date = datetime.fromisoformat(data['date']).isoformat()
+        except ValueError:
+            return jsonify({"message": "Invalid date format!"}), 400
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Database error!", "error": str(e)}), 500
+
     return jsonify({"message": "Transaction updated successfully!"}), 200
 
 @transaction_bp.route('/<int:transaction_id>', methods=['DELETE'])
@@ -72,7 +100,11 @@ def delete_transaction(transaction_id):
     if not transaction:
         return jsonify({"message": "Transaction not found!"}), 404
 
-    db.session.delete(transaction)
-    db.session.commit()
+    try:
+        db.session.delete(transaction)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": "Database error!", "error": str(e)}), 500
 
     return jsonify({"message": "Transaction deleted successfully!"}), 200
