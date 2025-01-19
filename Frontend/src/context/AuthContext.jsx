@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await loginUser({ username, password});
             const { token } = response;
-            localStorage.setItem("token", token);  //save the token in localstorage
+            // localStorage.setItem("token", token);  //save the token in localstorage
             setUser({ username});  // Set the logged-in-user
             return true;
         } catch (err) {
@@ -26,21 +26,29 @@ export const AuthProvider = ({ children }) => {
         }
     };
     // Register function
-    const register = async(email, username, password) => {
-        try{ 
-            // Call the registerUser API function 
-            await registerUser({email, username, password });
-            setError(null); // Clear any previous errors
-            return true;
-        } catch (err) {
-            // Handle errors and set an appropriate error message
-            const errorMessage =
-                err.response?.data?.message || "Registration failed. Please try again.";
-            console.error("Registration failed:", errorMessage);
-            setError(errorMessage); // Set the error state
-            return false;
-        }
-    };
+const register = async (email, username, password) => {
+    try { 
+        // Call the registerUser API function 
+        const response = await registerUser({ email, username, password });
+        
+        // Assuming the API response contains user data (e.g., username)
+        const { username: registeredUsername } = response;
+
+        // Set the user state to reflect the newly registered user
+        setUser({ username: registeredUsername });
+
+        setError(null); // Clear any previous errors
+        return true;
+    } catch (err) {
+        // Handle errors and set an appropriate error message
+        const errorMessage =
+            err.response?.data?.message || "Registration failed. Please try again.";
+        console.error("Registration failed:", errorMessage);
+        setError(errorMessage); // Set the error state
+        return false;
+    }
+};
+
 
     const logout = () => {
         localStorage.removeItem("token");  // Remove the token from localStorage
@@ -49,7 +57,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout,register}}>
             {children}
         </AuthContext.Provider>
     );

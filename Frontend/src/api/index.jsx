@@ -7,7 +7,7 @@ const API = axios.create({
 
 // Add token to headers if it exists in localstorage
 API.interceptors.request.use((req) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('auth_token');
     if (token) {
         req.headers.Authorization = `Bearer ${token}`;
     }
@@ -15,7 +15,18 @@ API.interceptors.request.use((req) => {
     return req;
 });
 
-export const registerUser = (data) => API.post('/auth/register', data);
+export const registerUser = async (data) => {
+    try {
+        const response = await API.post('/auth/register', data);
+        console.log("Register response:", response.data);
+
+
+        return response.data; // Return the entire response data
+    } catch (error) {
+        console.error("Error during registration:", error.response?.data || error.message);
+        throw error.response?.data || { message: "Registration failed" }; // Throw error with appropriate message
+    }
+};
 
 export const loginUser = async (data) => {
     try {
@@ -24,11 +35,7 @@ export const loginUser = async (data) => {
         const token = response.data.access_token; // Extract the token from the response
 
         if (token) {
-            
-            console.log("Token value before setting in localStorage:", token);
-            localStorage.setItem('token', token);
-            console.log("Token in localStorage after setting:", localStorage.getItem('token'));
-
+             localStorage.setItem('auth_token', token);
         }
         else{
             console.error("Token is missing in the response.");
@@ -44,6 +51,7 @@ export const loginUser = async (data) => {
 export const fetchTransactions = async () => {
     try {
         const response = await API.get("/transactions/"); // Ensure consistent trailing slash
+        console.log("I am response:", response);
         return response.data; // Explicitly return data
     } catch (error) {
         throw error.response?.data || "Failed to fetch transactions";

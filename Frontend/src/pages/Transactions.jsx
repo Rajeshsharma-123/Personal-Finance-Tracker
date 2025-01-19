@@ -18,7 +18,8 @@ function Transactions() {
         const getTransactions = async () => {
             setLoading(true);
             try {
-                const { data } = await fetchTransactions();
+                const  data  = await fetchTransactions();
+                console.log("Transactions data:", data); 
                 setTransactions(data);
             } catch (err) {
                 setError("Failed to fetch transactions. Please try again.");
@@ -43,6 +44,7 @@ function Transactions() {
             if (editing) {
                 // Update transaction
                 const { data } = await updateTransaction(editing.id, formattedData);
+                console.log("i am updateTransaction data:",data)
                 setTransactions((prev) =>
                     prev.map((txn) => (txn.id === editing.id ? data : txn))
                 );

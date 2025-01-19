@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 
+
 function SignUp() {
     const [formData, setFormData] = useState({email:'', username: '', password: '' });
     const [error, setError] = useState('');
@@ -16,7 +17,7 @@ function SignUp() {
         const success = await register(formData.email, formData.username, formData.password);
         if (success){
             alert('Account created successfully!');
-            navigate("/login");
+            navigate("/");
         } else {
             setError("Registration failed. Please try again.") ;
         }
